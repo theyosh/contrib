@@ -3,7 +3,8 @@
 Plugin to monitor Wowza streaming servers.
 
 Author: Srijan Choudhary <srijan4@gmail.com>
-Version: 2011031507
+Update: Joshua 'TheYOSH' Rubingh <joshua@jet-stream.nl>
+Version: 20170228
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -44,9 +45,16 @@ Configuration:
         - Optionally provide apps to exclude
         - Optionally provide vhosts to exclude
 
+Get variables from munin
+[wowza*]
+  env.server foo.bar.com
+  env.port 8086
+  env.user admin
+  env.pw password
+
+
 Possible TODOs:
         - use autoconf
-        - use munin's configuration system
 
 """
 from __future__ import print_function
@@ -54,12 +62,33 @@ from sys import argv, exit, stderr
 import urllib2
 from xml.etree.ElementTree import ElementTree
 from os.path import basename
-
+import os
 # CONFIGURATION
 
 server = "127.0.0.1:8086"
 user = "admin"
 pw = "password"
+
+# Get variables from munin
+# [wowza*]
+#   env.server foo.bar.com
+#   env.port 8086
+#   env.user admin
+#   env.pw password
+
+if "server" in os.environ:
+    server = os.environ["server"]
+
+if "port" in os.environ:
+    server += ":" + os.environ["port"]
+else:
+    server += ":8086"
+
+if "user" in os.environ:
+    user = os.environ["user"]
+
+if "pw" in os.environ:
+    pw = os.environ["pw"]
 
 # Exclude these in all calculations
 client_exclude = ("127.0.0.1")
