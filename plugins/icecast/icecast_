@@ -1,10 +1,11 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
 """
 Plugin to monitor icecast2 streaming servers.
 
 Author: Markus Lindenberg <markus.lindenberg@gmail.com>
-COntributors: Julien 'Lta' BALLET <elthariel@gmail.com>
-Version: 2009111101
+Contributors: Julien 'Lta' BALLET <elthariel@gmail.com>
+              Joshua 'TheYOSH' Rubingh <joshua@jet-stream.nl>
+Version: 20170228
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -38,12 +39,33 @@ Possible TODOs:
 	- documentation
 
 """
-
+import os
 # CONFIGURATION
 
 server = "localhost:8000"
 user = "admin"
 pw = "yourpassword"
+
+# Get variables from munin
+# [icecast*]
+#   env.icecast_host foo.bar.com
+#   env.icecast_port 8000
+#   env.icecast_username admin
+#   env.icecast_password hackme
+
+if "icecast_host" in os.environ:
+    server = os.environ["icecast_host"]
+
+if "icecast_port" in os.environ:
+    server += ":" + os.environ["icecast_port"]
+else:
+    server += ":8000"
+
+if "icecast_username" in os.environ:
+    user = os.environ["icecast_username"]
+
+if "icecast_password" in os.environ:
+    pw = os.environ["icecast_password"]
 
 # Exclude these hosts when calculating listening duration / listeners count
 # (we use this to prevent our aircheck recording system from appearing in the stats)
