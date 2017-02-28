@@ -1,6 +1,9 @@
 #! /usr/bin/python
 # -*- coding: iso-8859-1 -*-
 
+import urllib2, os.path, time, sys
+from xml.dom import minidom
+
 # Hostname of Icecast server
 # Just canonical name, no http:// nor ending /
 host = "foo.bar.com"
@@ -9,11 +12,32 @@ username = "admin"
 password = ""
 realm = "Icecast2 Server"
 
+# Get variables from munin
+# [icecast*]
+#   env.icecast_host foo.bar.com
+#   env.icecast_port 8000
+#   env.icecast_username admin
+#   env.icecast_password hackme
+#   env.icecast_realm Icecast2 Server
+
+if "icecast_host" in os.environ:
+    host = os.environ["icecast_host"]
+
+if "icecast_port" in os.environ:
+    host += ":" + os.environ["icecast_port"]
+else:
+    host += ":8000"
+
+if "icecast_username" in os.environ:
+    username = os.environ["icecast_username"]
+
+if "icecast_password" in os.environ:
+    password = os.environ["icecast_password"]
+
+if "icecast_realm" in os.environ:
+    realm = os.environ["icecast_realm"]
+
 # This plugin shows the statistics of every source currently connected to the Icecast2 server. See the Icecast2_ plugin for specific mountpoint plugin.
-
-import urllib2, os.path, time, sys
-from xml.dom import minidom
-
 def hent_XML():
     auth_handler = urllib2.HTTPBasicAuthHandler()
     auth_handler.add_password(realm, host, username, password)
@@ -43,7 +67,7 @@ def hent_XML():
 	mount = mount.replace("-", "_").replace(".", "_")
         sourcelist[mount[1:]] = (listeners, name)
 
-    if len(sys.argv) > 0 and sys.argv[1] == "autoconf":
+    if len(sys.argv) > 1 and sys.argv[1] == "autoconf":
 	print "yes"
     elif len(sys.argv) == 1 or sys.argv[1] != "config":
         print "totallyttere.value %s" % total_lyttere
@@ -58,7 +82,7 @@ def hent_XML():
         print "graph_vlabel listeners"
 	print "graph_category streaming"
         print "totallyttere.label Total number of listeners"
-        print "totalkilder.label Totalt number of sources"
+        print "totalkilder.label Total number of sources"
 	sourcesort = sourcelist.keys()
 	sourcesort.sort()
 	for source in sourcesort:
